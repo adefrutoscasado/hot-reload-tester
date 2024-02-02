@@ -7,10 +7,9 @@
     "develop": "concurrently --names \"tsc,node\" \"tsc --watch\" \"nodemon\""
   },
   "dependencies": {
-    "rrule": "^2.8.1",
-    "typescript": "^5.3.3"
   },
   "devDependencies": {
+    "typescript": "^5.3.3",
     "@babel/preset-env": "^7.23.9",
     "@babel/preset-typescript": "^7.23.3",
     "@types/jest": "^29.5.11",
