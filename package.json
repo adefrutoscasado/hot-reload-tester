@@ -3,9 +3,6 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "serve": "node build/index.js",
-    "tsc": "tsc",
-    "start": "npm run tsc && npm run serve",
     "test": "jest",
     "develop": "concurrently --names \"tsc,node\" \"tsc --watch\" \"nodemon\""
   },
