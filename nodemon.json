@@ -1,0 +1,6 @@
+{
+  "ignore": [".git", "node_modules", "dist", "build", "README.md"],
+  "watch": ["./tests", "./src"],
+  "exec": "npm run test",
+  "ext": "js,ts"
+}

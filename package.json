@@ -1,0 +1,25 @@
+{
+  "name": "rrule-duration-extension",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "serve": "node build/index.js",
+    "tsc": "tsc",
+    "start": "npm run tsc && npm run serve",
+    "test": "jest",
+    "develop": "concurrently --names \"tsc,node\" \"tsc --watch\" \"nodemon\""
+  },
+  "dependencies": {
+    "rrule": "^2.8.1",
+    "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.23.9",
+    "@babel/preset-typescript": "^7.23.3",
+    "@types/jest": "^29.5.11",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.0.3"
+  }
+}
