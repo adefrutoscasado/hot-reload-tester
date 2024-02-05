@@ -74,38 +74,48 @@ export default class ExtendedRRule {
       return this.rrule.between(...args) 
     }
 
-    // after and before naming is pretty confusing. Rename to inferior and superior limits
+    // "after" and "before" naming is pretty confusing. Rename to "inferior" and "superior" limits
     const [ after, before ] = args
     const [ inferiorLimit, superiorLimit ] = [ after, before ]
 
-    // we get the closest ocurrence on left to check if the duration intersects the analyzed range
-    const adjancentInferiorDateStart = this.rrule.before(inferiorLimit)
-    // The right ocurrence will never intersect since the duration is walys positive. Ignore.
-    // const adjancentInferiorDate = this.rrule.after(after)
-    // TODO: que pasa si mas de una ocurrencia intersecciona el rango inferior? solo estoy teniendo en cuenta una fecha
-    
-    if (!adjancentInferiorDateStart) {
-      return this.rrule.between(...args) 
+
+    let durationIntersectingOcurrences = [] as string[]
+
+    const searchDurationIntersectingOcurrences = (passedInferiorLimit: Date) => {      
+      if (!this.duration) {
+        return
+      }
+
+      // we get the closest ocurrence on left to check if the duration intersects the analyzed range
+      const adjancentInferiorDateStart = this.rrule.before(passedInferiorLimit)
+      // The right ocurrence will never intersect since the duration is walys positive. Ignore.
+      // const adjancentInferiorDate = this.rrule.after(after)
+      // TODO: que pasa si mas de una ocurrencia intersecciona el rango inferior? solo estoy teniendo en cuenta una fecha
+
+      if (!adjancentInferiorDateStart) {
+        return
+      }
+
+      const adjancentInferiorDateEnd = moment(adjancentInferiorDateStart).add(this.duration.amount, this.duration.unit)
+
+      const intersectsTheThresold = eventIntersectThresold(
+        moment(adjancentInferiorDateStart),
+        adjancentInferiorDateEnd,
+        moment(inferiorLimit),
+        moment(superiorLimit)
+      )
+      if (intersectsTheThresold) {
+        durationIntersectingOcurrences = [adjancentInferiorDateStart.toISOString(), ...durationIntersectingOcurrences]
+        // We continue searching ocurences until we find one that doesnt intersects.
+        // Could be more than one ocurrence overlapping
+        searchDurationIntersectingOcurrences(adjancentInferiorDateStart)
+      }
+      return
     }
 
-    const adjancentInferiorDateEnd = moment(adjancentInferiorDateStart).add(this.duration.amount, this.duration.unit)
+    searchDurationIntersectingOcurrences(inferiorLimit)
 
-    console.log({adjancentInferiorDateStart: adjancentInferiorDateStart.toISOString()})
-    console.log({adjancentInferiorDateEnd: adjancentInferiorDateEnd.toISOString()})
-    // TODO: review inclusivity
-    // const intersectsTheRange = moment(adjancentInferiorDateEnd).isBetween(inferiorLimit, superiorLimit, null, '[]')
-    const intersectsTheThresold = eventIntersectThresold(
-      moment(adjancentInferiorDateStart),
-      adjancentInferiorDateEnd,
-      moment(inferiorLimit),
-      moment(superiorLimit)
-    )
-
-    if (intersectsTheThresold) {
-      return [adjancentInferiorDateStart.toISOString(), ...this.rrule.between(...args)]
-    }
-
-    return this.rrule.between(...args)
+    return [...durationIntersectingOcurrences, ...this.rrule.between(...args)]
   }
   // returns the first ocurrence before the given date in arguments
   before(...args: Parameters<typeof this.rrule.before>) {

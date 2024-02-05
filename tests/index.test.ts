@@ -7,18 +7,19 @@ const _ = (obj) => {
 }
 
 
-const RRuleDefinitionA = {
-  freq: RRule.WEEKLY,
-  interval: 5,
-  byweekday: [RRule.MO, RRule.FR],
-  dtstart: datetime(2012, 2, 1, 10, 30),
-  until: datetime(2012, 12, 31),
-}
-
 
 describe('ExtendedRRule behaves similar to RRule while lacking duration', () => {
-  const originalRRule = new RRule(RRuleDefinitionA)
-  const extendedRRule = new ExtendedRRule(RRuleDefinitionA)
+
+  const RRuleDefinition = {
+    freq: RRule.WEEKLY,
+    interval: 5,
+    byweekday: [RRule.MO, RRule.FR],
+    dtstart: datetime(2012, 2, 1, 10, 30),
+    until: datetime(2012, 12, 31),
+  }
+
+  const originalRRule = new RRule(RRuleDefinition)
+  const extendedRRule = new ExtendedRRule(RRuleDefinition)
   test('when using "all" method', () => {
     expect(_(originalRRule.all())).toBe(_(extendedRRule.all()))
     // console.log('all', originalRRule.all())
@@ -68,18 +69,21 @@ describe('ExtendedRRule behaves similar to RRule while lacking duration', () => 
   })
 })
 
-const RRuleDefinitionB: ExtendedRRuleArgsOptions = {
-  freq: RRule.DAILY,
-  byweekday: [RRule.MO, RRule.FR],
-  dtstart: datetime(2024, 1, 29, 10, 0),
-  duration: {
-    amount: 2,
-    unit: 'hours'
-  }
-}
+
 
 describe('ExtendedRRule works correctly with a duration of 2 hours', () => {
-  const extendedRRule = new ExtendedRRule(RRuleDefinitionB)
+
+  const RRuleDefinition: ExtendedRRuleArgsOptions = {
+    freq: RRule.DAILY,
+    byweekday: [RRule.MO, RRule.FR],
+    dtstart: datetime(2024, 1, 29, 10, 0),
+    duration: {
+      amount: 2,
+      unit: 'hours'
+    }
+  }
+
+  const extendedRRule = new ExtendedRRule(RRuleDefinition)
   test('when first limit of range intersects the duration of first ocurrence', () => {
     const after = new Date('2024-01-29T11:00:00.000Z')
     const before = new Date('2024-02-02T11:00:00.000Z')
@@ -126,17 +130,20 @@ describe('ExtendedRRule works correctly with a duration of 2 hours', () => {
   })
 })
 
-const RRuleDefinitionC: ExtendedRRuleArgsOptions = {
-  freq: RRule.MONTHLY,
-  dtstart: datetime(2024, 1, 1, 10, 0),
-  duration: {
-    amount: 15,
-    unit: 'days'
-  }
-}
+
 
 describe('ExtendedRRule works correctly with a duration of 15 days', () => {
-  const extendedRRule = new ExtendedRRule(RRuleDefinitionC)
+
+  const RRuleDefinition: ExtendedRRuleArgsOptions = {
+    freq: RRule.MONTHLY,
+    dtstart: datetime(2024, 1, 1, 10, 0),
+    duration: {
+      amount: 15,
+      unit: 'days'
+    }
+  }
+
+  const extendedRRule = new ExtendedRRule(RRuleDefinition)
   test('when limit of range (of 1 day) intersects the duration of first ocurrence', () => {
     const after = new Date('2024-02-05T11:00:00.000Z')
     const before = new Date('2024-02-06T11:00:00.000Z')
@@ -172,5 +179,57 @@ describe('ExtendedRRule works correctly with a duration of 15 days', () => {
     //                               (range intersects the duration of the previous element, but not the event itself)
     //   '2024-03-01T10:00:00.000Z',
     //   ...
+  })
+})
+
+
+
+describe('ExtendedRRule works correctly with duration overlapping', () => {
+
+  const RRuleDefinition: ExtendedRRuleArgsOptions = {
+    freq: RRule.DAILY,
+    dtstart: datetime(2024, 1, 1, 10, 0),
+    count: 5,
+    duration: {
+      amount: 5,
+      unit: 'days'
+    }
+  }
+
+  const extendedRRule = new ExtendedRRule(RRuleDefinition)
+  test('When a single day contains 5 overlapping ocurrences', () => {
+    const after = new Date('2024-01-05T11:00:00.000Z')
+    const before = new Date('2024-01-05T12:00:00.000Z')
+    expect(_(extendedRRule.between(after, before)))
+      .toBe(_(
+        [
+          '2024-01-01T10:00:00.000Z', // -> (return this)
+          '2024-01-02T10:00:00.000Z', // -> (return this)
+          '2024-01-03T10:00:00.000Z', // -> (return this)
+          '2024-01-04T10:00:00.000Z', // -> (return this)
+          '2024-01-05T10:00:00.000Z', // -> (return this) (range is here, but intersects ALL ocurrences since the last for 5 days)
+        ]
+      )
+    )
+  })
+  test('When a single day contains 2 ocurrences that are about to finish', () => {
+    const after = new Date('2024-01-08T11:00:00.000Z')
+    const before = new Date('2024-01-08T12:00:00.000Z')
+    expect(_(extendedRRule.between(after, before)))
+      .toBe(_(
+        [
+          '2024-01-04T10:00:00.000Z', // (return this) (finish at 2024-01-09T10:00:00.000Z)
+          '2024-01-05T10:00:00.000Z'  // (return this) (finish at 2024-01-10T10:00:00.000Z)
+        ]
+      )
+    )
+  })
+  test('When a contains 2 ocurrences that are about to finish', () => {
+    const after = new Date('2024-01-10T11:00:00.000Z')
+    const before = new Date('2024-01-10T12:00:00.000Z')
+    expect(_(extendedRRule.between(after, before)))
+      // last event finishes at 2024-01-10T10:00:00.000Z, so no intersections.
+      .toBe(_([])
+    )
   })
 })
