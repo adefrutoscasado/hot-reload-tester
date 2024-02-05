@@ -233,3 +233,93 @@ describe('ExtendedRRule works correctly with duration overlapping', () => {
     )
   })
 })
+
+describe('ExtendedRRule works correctly with duration overlapping for a duation of 1 month', () => {
+
+  const RRuleDefinition: ExtendedRRuleArgsOptions = {
+    freq: RRule.DAILY,
+    dtstart: datetime(2024, 1, 1, 10, 0),
+    count: 5,
+    duration: {
+      amount: 1,
+      unit: 'month'
+    }
+  }
+
+  const extendedRRule = new ExtendedRRule(RRuleDefinition)
+  test('When we are checking the start of the recurrence', () => {
+    const after = new Date('2024-01-01T09:00:00.000Z')
+    const before = new Date('2024-01-15T12:00:00.000Z')
+    expect(_(extendedRRule.between(after, before)))
+      .toBe(_(
+        [
+          '2024-01-01T10:00:00.000Z', // -> (return this)
+          '2024-01-02T10:00:00.000Z', // -> (return this)
+          '2024-01-03T10:00:00.000Z', // -> (return this)
+          '2024-01-04T10:00:00.000Z', // -> (return this)
+          '2024-01-05T10:00:00.000Z', // -> (return this) (range is here, but intersects ALL ocurrences since the last for 5 days)
+        ]
+      )
+    )
+  })
+  test('When we are checking the middle of the recurrence', () => {
+    const after = new Date('2024-01-16T09:00:00.000Z')
+    const before = new Date('2024-01-16T12:00:00.000Z')
+    expect(_(extendedRRule.between(after, before)))
+      .toBe(_(
+        [
+          '2024-01-01T10:00:00.000Z', // -> (return this)
+          '2024-01-02T10:00:00.000Z', // -> (return this)
+          '2024-01-03T10:00:00.000Z', // -> (return this)
+          '2024-01-04T10:00:00.000Z', // -> (return this)
+          '2024-01-05T10:00:00.000Z', // -> (return this) (range is here, but intersects ALL ocurrences since the last for 5 days)
+        ]
+      )
+    )
+  })
+  test('When we are checking the entire recurrence', () => {
+    const after = new Date('2023-01-01T09:00:00.000Z') // 2023!
+    const before = new Date('2025-01-01T12:00:00.000Z') // 2025!
+    expect(_(extendedRRule.between(after, before)))
+      .toBe(_(
+        [
+          '2024-01-01T10:00:00.000Z', // -> (return this)
+          '2024-01-02T10:00:00.000Z', // -> (return this)
+          '2024-01-03T10:00:00.000Z', // -> (return this)
+          '2024-01-04T10:00:00.000Z', // -> (return this)
+          '2024-01-05T10:00:00.000Z', // -> (return this) (range is here, but intersects ALL ocurrences since the last for 5 days)
+        ]
+      )
+    )
+  })
+  test('When we are checking the end of the recurrence', () => {
+    const after = new Date('2024-02-01T09:00:00.000Z')
+    const before = new Date('2024-02-15T12:00:00.000Z')
+    expect(_(extendedRRule.between(after, before)))
+      .toBe(_(
+        [
+          '2024-01-01T10:00:00.000Z', // -> (return this)
+          '2024-01-02T10:00:00.000Z', // -> (return this)
+          '2024-01-03T10:00:00.000Z', // -> (return this)
+          '2024-01-04T10:00:00.000Z', // -> (return this)
+          '2024-01-05T10:00:00.000Z', // -> (return this) (range is here, but intersects ALL ocurrences since the last for 5 days)
+        ]
+      )
+    )
+  })
+  test('When we are checking the end of the recurrence (removing first ocurrence)', () => {
+    const after = new Date('2024-02-01T11:00:00.000Z')
+    const before = new Date('2024-02-15T12:00:00.000Z')
+    expect(_(extendedRRule.between(after, before)))
+      .toBe(_(
+        [
+          // '2024-01-01T10:00:00.000Z', // -> out of range
+          '2024-01-02T10:00:00.000Z', // -> (return this)
+          '2024-01-03T10:00:00.000Z', // -> (return this)
+          '2024-01-04T10:00:00.000Z', // -> (return this)
+          '2024-01-05T10:00:00.000Z', // -> (return this) (range is here, but intersects ALL ocurrences since the last for 5 days)
+        ]
+      )
+    )
+  })
+})
