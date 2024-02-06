@@ -234,7 +234,7 @@ describe('ExtendedRRule works correctly with duration overlapping', () => {
   })
 })
 
-describe('ExtendedRRule works correctly with duration overlapping for a duation of 1 month', () => {
+describe('ExtendedRRule works correctly with duration overlapping for a duration of 1 month', () => {
 
   const RRuleDefinition: ExtendedRRuleArgsOptions = {
     freq: RRule.DAILY,
@@ -253,11 +253,13 @@ describe('ExtendedRRule works correctly with duration overlapping for a duation 
     expect(_(extendedRRule.between(after, before)))
       .toBe(_(
         [
+          // range start here
           '2024-01-01T10:00:00.000Z', // -> (return this)
           '2024-01-02T10:00:00.000Z', // -> (return this)
           '2024-01-03T10:00:00.000Z', // -> (return this)
           '2024-01-04T10:00:00.000Z', // -> (return this)
-          '2024-01-05T10:00:00.000Z', // -> (return this) (range is here, but intersects ALL ocurrences since the last for 5 days)
+          '2024-01-05T10:00:00.000Z', // -> (return this) 
+          // range finish here
         ]
       )
     )
@@ -272,7 +274,8 @@ describe('ExtendedRRule works correctly with duration overlapping for a duation 
           '2024-01-02T10:00:00.000Z', // -> (return this)
           '2024-01-03T10:00:00.000Z', // -> (return this)
           '2024-01-04T10:00:00.000Z', // -> (return this)
-          '2024-01-05T10:00:00.000Z', // -> (return this) (range is here, but intersects ALL ocurrences since the last for 5 days)
+          '2024-01-05T10:00:00.000Z', // -> (return this) 
+          // (range is here, but intersects ALL ocurrences since they last for 1 month)
         ]
       )
     )
@@ -283,11 +286,15 @@ describe('ExtendedRRule works correctly with duration overlapping for a duation 
     expect(_(extendedRRule.between(after, before)))
       .toBe(_(
         [
+          // range start here
+          //
           '2024-01-01T10:00:00.000Z', // -> (return this)
           '2024-01-02T10:00:00.000Z', // -> (return this)
           '2024-01-03T10:00:00.000Z', // -> (return this)
           '2024-01-04T10:00:00.000Z', // -> (return this)
-          '2024-01-05T10:00:00.000Z', // -> (return this) (range is here, but intersects ALL ocurrences since the last for 5 days)
+          '2024-01-05T10:00:00.000Z', // -> (return this)
+          //
+          // range finish here
         ]
       )
     )
@@ -302,7 +309,8 @@ describe('ExtendedRRule works correctly with duration overlapping for a duation 
           '2024-01-02T10:00:00.000Z', // -> (return this)
           '2024-01-03T10:00:00.000Z', // -> (return this)
           '2024-01-04T10:00:00.000Z', // -> (return this)
-          '2024-01-05T10:00:00.000Z', // -> (return this) (range is here, but intersects ALL ocurrences since the last for 5 days)
+          '2024-01-05T10:00:00.000Z', // -> (return this)
+          //  (range is here, but intersects ALL ocurrences since they last for 1 month)
         ]
       )
     )
@@ -314,10 +322,12 @@ describe('ExtendedRRule works correctly with duration overlapping for a duation 
       .toBe(_(
         [
           // '2024-01-01T10:00:00.000Z', // -> out of range
+          // range starts here
           '2024-01-02T10:00:00.000Z', // -> (return this)
           '2024-01-03T10:00:00.000Z', // -> (return this)
           '2024-01-04T10:00:00.000Z', // -> (return this)
-          '2024-01-05T10:00:00.000Z', // -> (return this) (range is here, but intersects ALL ocurrences since the last for 5 days)
+          '2024-01-05T10:00:00.000Z', // -> (return this)
+          // range finish here
         ]
       )
     )
